@@ -56,21 +56,33 @@ let compare (e1: pExp) (e2: pExp) : bool =
   Hint 2: Recurse on the elements of Plus[..] or Times[..]
 *)
 let rec print_pExp (_e: pExp): unit = match _e with
-    | Term(co,deg) -> Printf.printf "%d" co;
-                      (match deg with
-                      | 0 -> Printf.printf "";
-                      | 1 -> Printf.printf "x"; 
-                      | _ -> Printf.printf "x^%d" deg;
+    | Term(co,deg) -> (match co with
+                      | 0 -> Printf.printf "0"; 
+                      | 1 -> Printf.printf ""; (match deg with
+                                                | 0 -> Printf.printf "";
+                                                | 1 -> Printf.printf "x"; 
+                                                | _ -> Printf.printf "x^%d" deg;
+                                                )
+                      | _ -> Printf.printf "%d" co; (match deg with
+                                                    | 0 -> Printf.printf "";
+                                                    | 1 -> Printf.printf "x"; 
+                                                    | _ -> Printf.printf "x^%d" deg;
+                                                    )
                       )
     | Plus(eList) -> (match eList with
-                      | eHd::eTl -> print_pExp eHd; Printf.printf "+"; print_pExp (Plus eTl );
+                      | eHd::eTl -> (match eTl with
+                                    | []-> print_pExp eHd;
+                                    | _ -> print_pExp eHd; Printf.printf "+"; print_pExp (Plus eTl );
+                                    )
                       | [] -> Printf.printf "\n";
                      )
     | Times(eList)-> (match eList with
-                      | eHd::eTl -> print_pExp eHd; Printf.printf "*"; print_pExp (Times eTl);
+                      | eHd::eTl -> (match eTl with
+                                    | []-> print_pExp eHd;
+                                    | _ -> print_pExp eHd; Printf.printf "*("; print_pExp (Times eTl ); Printf.printf ")";
+                                    )
                       | [] -> Printf.printf "\n";
                      )
-    Printf.printf "\n";
 ;;
 
 (* 
