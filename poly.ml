@@ -1,3 +1,10 @@
+(* Simplification of two plus is sorted version of the two lists concatenated, similar with multiplication *)
+(* Can be done in a single simplification but it's more likely to call simplify until it doens't simplify anymore
+Multiplication of polynomials -> times list. i.e p(x)^10 = Times([p,p,p,p,p,...]) 
+subtraction = Add(T1, Times(Term(-1,0),T2))
+*)
+
+
 (* Sum type to encode efficiently polynomial expressions *)
 type pExp =
   | Term of int*int (*
@@ -13,7 +20,6 @@ type pExp =
     Plus([Term(2,1); Term(1,0)])
   *)
   | Times of pExp list (* List of terms multiplied *)
-
 
 (*
   Function to traslate betwen AST expressions
@@ -49,10 +55,23 @@ let compare (e1: pExp) (e2: pExp) : bool =
   Hint 1: Print () around elements that are not Term() 
   Hint 2: Recurse on the elements of Plus[..] or Times[..]
 *)
-let print_pExp (_e: pExp): unit =
-  (* TODO *)
-  Printf.printf("Not implemented");
-  print_newline()
+let rec print_pExp (_e: pExp): unit = match _e with
+    | Term(co,deg) -> Printf.printf "%d" co;
+                      (match deg with
+                      | 0 -> Printf.printf "";
+                      | 1 -> Printf.printf "x"; 
+                      | _ -> Printf.printf "x^%d" deg;
+                      )
+    | Plus(eList) -> (match eList with
+                      | eHd::eTl -> print_pExp eHd; Printf.printf "+"; print_pExp (Plus eTl );
+                      | [] -> Printf.printf "\n";
+                     )
+    | Times(eList)-> (match eList with
+                      | eHd::eTl -> print_pExp eHd; Printf.printf "*"; print_pExp (Times eTl);
+                      | [] -> Printf.printf "\n";
+                     )
+    Printf.printf "\n";
+;;
 
 (* 
   Function to simplify (one pass) pExpr
@@ -92,7 +111,5 @@ let rec simplify (e:pExp): pExp =
         e
       else  
         simplify(rE)
-
-
 
 
