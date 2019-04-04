@@ -47,7 +47,17 @@ let rec from_expr (_e: Expr.expr) : pExp =
   Hint 2: Degree of Plus[...] is the max of the degree of args
   Hint 3: Degree of Times[...] is the sum of the degree of args 
 *)
-let degree (_e:pExp): int = 0 (* TODO *)
+
+let rec degree (_e:pExp): int = match _e with
+      | Term(c,d) -> d 
+      | Plus(eHd::eTl) ->   (match eTl with
+                            | [] -> degree eHd
+                            | _-> Stdlib.max (degree eHd) (degree(Plus eTl))
+                            )
+      | Times(eHd::eTl) ->  (match eTl with
+                            | [] -> degree eHd
+                            | _-> (degree eHd) + (degree (Times eTl))
+                            )
 
 (* 
   Comparison function useful for sorting of Plus[..] args 
