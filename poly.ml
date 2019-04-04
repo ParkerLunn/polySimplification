@@ -25,8 +25,20 @@ type pExp =
   Function to traslate betwen AST expressions
   to pExp expressions
 *)
-let from_expr (_e: Expr.expr) : pExp =
-    Term(0,0) (* TODO *)
+let rec from_expr (_e: Expr.expr) : pExp =
+    match _e with
+      | Num(n) -> Term(n,0)
+      | Var(c) -> Term(1,1)
+      | Add(e1,e2) -> Plus([(from_expr e1); (from_expr e2)])
+      | Sub(e1,e2) -> Plus([(from_expr e1) ; Times([Term(-1,0); (from_expr e2)])])
+      | Mul(e1,e2) -> Times([(from_expr e1); (from_expr e2)])
+      | Pow(e,i) -> (match i with
+                    | 0-> Term(1,0)
+                    | 1-> from_expr e
+                    | _ -> Times([(from_expr e); (from_expr (Pow(e,i-1)))])
+                    )
+      | Pos(e) -> from_expr e;
+      | Neg(e) -> Times([Term(-1,0); (from_expr e)])
 
 (* 
   Compute degree of a polynomial expression.
@@ -72,14 +84,14 @@ let rec print_pExp (_e: pExp): unit = match _e with
     | Plus(eList) -> (match eList with
                       | eHd::eTl -> (match eTl with
                                     | []-> print_pExp eHd;
-                                    | _ -> print_pExp eHd; Printf.printf "+"; print_pExp (Plus eTl );
+                                    | _ -> print_pExp eHd; Printf.printf " + "; print_pExp (Plus eTl );
                                     )
                       | [] -> Printf.printf "\n";
                      )
     | Times(eList)-> (match eList with
                       | eHd::eTl -> (match eTl with
                                     | []-> print_pExp eHd;
-                                    | _ -> print_pExp eHd; Printf.printf "*("; print_pExp (Times eTl ); Printf.printf ")";
+                                    | _ -> print_pExp eHd; Printf.printf " * "; print_pExp (Times eTl );
                                     )
                       | [] -> Printf.printf "\n";
                      )
@@ -109,8 +121,7 @@ let simplify1 (e:pExp): pExp =
   Compute if two pExp are the same 
   Make sure this code works before you work on simplify1  
 *)
-let equal_pExp (_e1: pExp) (_e2: pExp) :bool =
-  true
+let equal_pExp (_e1: pExp) (_e2: pExp) :bool = _e1 = _e2
 
 (* Fixed point version of simplify1 
   i.e. Apply simplify1 until no 
@@ -119,6 +130,7 @@ let equal_pExp (_e1: pExp) (_e2: pExp) :bool =
 let rec simplify (e:pExp): pExp =
     let rE = simplify1(e) in
       print_pExp rE;
+      print_newline();
       if (equal_pExp e rE) then
         e
       else  
