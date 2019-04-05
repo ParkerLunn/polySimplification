@@ -65,11 +65,16 @@ let rec degree (_e:pExp): int = match _e with
   to "normalize them". This way, terms that need to be reduced
   show up one after another.
   *)
-let compare_expr (e1: pExp) (e2: pExp) : int =
+(* let compare_expr (e1: pExp) (e2: pExp) : int =
   compare (degree e1) (degree e2)
   
 let rec sort_pExpList (pList: (pExp list)): (pExp list) =
-    List.rev (List.sort pList compare_expr)
+    List.rev (List.sort pList compare_expr) *)
+let compare (e1: pExp) (e2: pExp) : bool =
+  degree e1 > degree e2
+  
+let rec sort_pExpList (pList: (pExp list)): (pExp list) =
+    Sort.list compare pList
 (* Print a pExpr nicely 
   Term(3,0) -> 3
   Term(5,1) -> 5x 
