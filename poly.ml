@@ -66,7 +66,9 @@ let rec degree (_e:pExp): int = match _e with
   *)
 let compare (e1: pExp) (e2: pExp) : bool =
   degree e1 > degree e2
-
+  
+let rec sort_pExpList (pList: (pExp list)): (pExp list) =
+    Sort.list compare pList
 (* Print a pExpr nicely 
   Term(3,0) -> 3
   Term(5,1) -> 5x 
