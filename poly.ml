@@ -4,6 +4,7 @@ Multiplication of polynomials -> times list. i.e p(x)^10 = Times([p,p,p,p,p,...]
 subtraction = Add(T1, Times(Term(-1,0),T2))
 *)
 
+(* Times(Times([a;b]);Times([c;d])) = Plus([Times([a;c]);Times(a;d);Times(b;c);Times(b;d)]) *)
 
 (* Sum type to encode efficiently polynomial expressions *)
 type pExp =
@@ -64,11 +65,11 @@ let rec degree (_e:pExp): int = match _e with
   to "normalize them". This way, terms that need to be reduced
   show up one after another.
   *)
-let compare (e1: pExp) (e2: pExp) : bool =
-  degree e1 > degree e2
+let compare_expr (e1: pExp) (e2: pExp) : int =
+  compare (degree e1) (degree e2)
   
 let rec sort_pExpList (pList: (pExp list)): (pExp list) =
-    Sort.list compare pList
+    List.rev (List.sort pList compare_expr)
 (* Print a pExpr nicely 
   Term(3,0) -> 3
   Term(5,1) -> 5x 
