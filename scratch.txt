@@ -2,3 +2,4 @@ sort
 print_pExp ( Times( [Term(2,3); Plus( [Term(4,4); Term(2,2) ])]));;
 degree (Plus([ (Term(2,2)) ; (Term(1,4))]))
 degree (Times([ (Term(2,2)) ; (Term(1,4))]))
+Times(Times([a;b]);Times([c;d])) = Plus([Times([a;c]);Times(a;d);Times(b;c);Times(b;d)])
