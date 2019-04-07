@@ -11,6 +11,9 @@ type pExp =
   | Term of int*int (*
       First int is the constant
       Second int is the power of x 
+      10  -> Term(10,0)
+      2x -> Term(2,1)
+      3x^20 -> Term(3, 20)
     *)
   | Plus of pExp list
   (*
@@ -40,6 +43,7 @@ let rec from_expr (_e: Expr.expr) : pExp =
 
 (* 
   Compute degree of a polynomial expression.
+
   Hint 1: Degree of Term(n,m) is m
   Hint 2: Degree of Plus[...] is the max of the degree of args
   Hint 3: Degree of Times[...] is the sum of the degree of args 
@@ -56,13 +60,28 @@ let rec degree (_e:pExp): int = match _e with
                             | _-> (degree eHd) + (degree (Times eTl))
                             )
 
+(* 
+  Comparison function useful for sorting of Plus[..] args 
+  to "normalize them". This way, terms that need to be reduced
+  show up one after another.
+  *)
 let compare_expr (e1: pExp) (e2: pExp) : int =
   compare (degree e1) (degree e2)
   
 let rec sort_pExpList (pList: (pExp list)): (pExp list) =
     List.rev (List.sort compare_expr pList )
+(* let compare (e1: pExp) (e2: pExp) : bool =
+  degree e1 > degree e2
+  
+let rec sort_pExpList (pList: (pExp list)): (pExp list) =
+    Sort.list compare pList *)
+(* Print a pExpr nicely 
+  Term(3,0) -> 3
+  Term(5,1) -> 5x 
+  Term(4,2) -> 4x^2
+  Plus... -> () + () 
+  Times ... -> ()() .. ()
 
-(* 
   Hint 1: Print () around elements that are not Term() 
   Hint 2: Recurse on the elements of Plus[..] or Times[..]
 *)
@@ -113,63 +132,9 @@ let rec print_pExp (_e: pExp): unit = match _e with
       => Plus[Term(2,3); Term(6,5)]
   Hint 6: Find other situations that can arise
 *)
-let get_coeff (t:pExp):int = match t with 
-    | Term(c,d) -> c
-    | _ -> failwith "not a term"
+let simplify1 (e:pExp): pExp =
+    e
 
-let get_deg (t:pExp):int = match t with 
-    | Term(c,d) -> d
-    | _ -> failwith "not a term"
-
-    (* if both are terms with same degree, return one term with coefs added
-      If both are pluses, concat their lists
-      if both are times, mult every index of l1 with every index of l2
-    *)
-let add_terms (e1:pExp) (e2:pExp) : pExp = match e1 with
-    | Term(c1,d1) -> if (d1==(get_deg e2)) then Term(((get_coeff e1)+(get_coeff e2)),d1) else Plus(e1::e2)
-
-let rec mul_terms (pExpList:(pExp list)) : pExp =
-  match pExpList with
-    | a::b::eTl -> 
-    (* after each double match, call mul_terms on newTerm::eTl *)
-      match a with
-        | Term(c1, d1) ->
-          match b with
-            | Term(c2, d2) -> (* Create single term from the two *)
-            | Plus(pExprList) -> (* Multiply each term in the plus by A term *)
-            | Times(pExprList) -> (* Get term from TIMES, then multiply by A term *)
-        | Plus(c1, d1) ->
-          match b with
-            | Term(c2, d2) -> (* Multiply each term in the PLUS by A term *)
-            | Plus(pExprList) -> (* FOIL *)
-            | Times(pExprList) -> (* Get term from TIMES, then distribute into PLUS *)
-        | Times(c1, d1) ->
-          match b with
-            | Term(c2, d2) -> (* Get term from TIMES, then multiply by B term *)
-            | Plus(pExprList) -> (* Get term from TIMES, then distribute into PLUS *)
-            | Times(pExprList) -> (* Get term from TIMES, obtain single term from both *)
-    | a::[] -> a
-
-let rec simplify1 (e:pExp) : pExp = 
-  match e with
-    | Plus(a::b::eTl) ->
-      match a with
-        | Term ->
-          match b with
-            | Term -> add_terms a b
-            | Plus(pList) -> Plus((sort_pExpList (a::pList)))
-            | Times(pExpList) -> mul_terms pExpList
-        | Plus(pExprList) -> simplify1 (Plus(pExprList::b))
-        | Times(a::b::eTl) ->
-    | Times(a::b) ->
-      match a with
-        | Term ->
-          match b with
-            | Term -> 
-            | Plus ->
-            | Times ->
-        | Plus(a::b::eTl) -> 
-        | Times(a::b::eTl) -> Times(combine(Times(a::b)),eTl)
 (* 
   Compute if two pExp are the same 
   Make sure this code works before you work on simplify1  
