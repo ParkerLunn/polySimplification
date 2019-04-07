@@ -121,6 +121,15 @@ let get_deg (t:pExp):int = match t with
     | Term(c,d) -> d
     | _ -> failwith "not a term"
 
+let rec flatten (e:pExp): (pExp list) = match e with
+    | Term(_,_) -> [e]
+    | Plus([]) -> []
+    | Plus(outHd::outTl) -> match outHd with
+                            | Term(_,_) -> outHd::(flatten (Plus outTl))
+                            | Plus(inList) -> inList@(flatten (Plus outTl))
+                            | Times(inList) -> (flatten outHd)@(flatten (Plus outTl))
+
+
     (* if both are terms with same degree, return one term with coefs added
       If both are pluses, concat their lists
       if both are times, mult every index of l1 with every index of l2
@@ -135,15 +144,15 @@ let rec mul_terms (pExpList:(pExp list)) : pExp =
       match a with
         | Term(c1, d1) ->
           match b with
-            | Term(c2, d2) -> (* Create single term from the two *)
-            | Plus(pExprList) -> (* Multiply each term in the plus by A term *)
-            | Times(pExprList) -> (* Get term from TIMES, then multiply by A term *)
-        | Plus(c1, d1) ->
+            | Term(c2, d2) -> Term((c2*c1),(d1+d2)) (* Create single term from the two *)
+            | Plus(pExprList) -> Plus((List.map (fun x -> mul_terms a x) pExprList))(* Multiply each term in the plus by A term *)
+            | Times(pExprList) -> Times(mul_terms (a::(mul_terms pExprList)))(* Get term from TIMES, then multiply by A term *)
+        | Plus(eList) ->
           match b with
-            | Term(c2, d2) -> (* Multiply each term in the PLUS by A term *)
+            | Term(c2, d2) -> Plus((List.map (fun x -> mul_terms b x) eList))(* Multiply each term in the PLUS by A term *)
             | Plus(pExprList) -> (* FOIL *)
-            | Times(pExprList) -> (* Get term from TIMES, then distribute into PLUS *)
-        | Times(c1, d1) ->
+            | Times(pExprList) -> Plus(eList::(mul_terms pExprList))(* Get term from TIMES, then distribute into PLUS *)
+        | Times(eList) ->
           match b with
             | Term(c2, d2) -> (* Get term from TIMES, then multiply by B term *)
             | Plus(pExprList) -> (* Get term from TIMES, then distribute into PLUS *)
