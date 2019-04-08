@@ -47,6 +47,8 @@ let rec from_expr (_e: Expr.expr) : pExp =
 
 let rec degree (_e:pExp): int = match _e with
       | Term(c,d) -> d 
+      | Plus([]) -> 0
+      | Times([]) -> 0
       | Plus(eHd::eTl) ->   (match eTl with
                             | [] -> degree eHd
                             | _-> Stdlib.max (degree eHd) (degree(Plus eTl))
@@ -146,13 +148,15 @@ let rec flatten (e:pExp): (pExp list) = match e with
                             | Times(inList) -> (inList)@(flatten (Times outTl))
                             )
 
-(* 
+(* (* 
   if both are terms with same degree, return one term with coefs added
   If both are pluses, concat their lists
   if both are times, mult every index of l1 with every index of l2
 *)
 let add_terms (e1:pExp) (e2:pExp) : pExp = match e1 with
-    | Term(c1,d1) -> if (d1==(get_deg e2)) then Term(((get_coeff e1)+(get_coeff e2)),d1) else Plus([e1;e2])
+    | Term(c1,d1)  -> if (d1==(get_deg e2)) then Term(((get_coeff e1)+(get_coeff e2)),d1) else Plus([e1;e2])
+    | Plus(eList)  -> 
+    | Times(eList) ->  *)
 
 let rec mul_terms (pExpList:(pExp list)) : pExp =
   match pExpList with
@@ -179,16 +183,17 @@ let rec mul_terms (pExpList:(pExp list)) : pExp =
             )
       )
     | a::[] -> a
+    | [] -> failwith "you fucked up"
 
 let rec simplify1 (e:pExp) : pExp = 
   match e with
     | Plus(a::b::eTl) ->
       (match a with
-        | Term(_,_) ->
+        | Term(c1,d1) ->
           (match b with
-            | Term(_,_) -> Plus((add_terms a b)::eTl)
+            | Term(c2,d2) -> if (d1==d2) then Term((c1+c2),d1) else Plus([a;b])
             | Plus(pList) -> Plus((sort_pExpList (a::pList)))
-            | Times(pExpList) -> mul_terms pExpList
+            | Times(pExpList) -> Plus(a::[(mul_terms pExpList)])
           )
         | Plus(pExprList) -> simplify1 (Plus(b::pExprList))
         | Times(a::b::eTl) -> Plus((mul_terms [a;b])::eTl)
