@@ -196,7 +196,7 @@ let rec combine_terms (e:pExp) : (pExp) =
       (match a with
         | Term(c1, d1) ->
           (match b with
-            | Term(c2, d2) -> if (d1==d2) then combine_terms (Plus((Term((c1+c2),d1))::eTl)) else Plus(a::(combine_terms b::eTl))
+            | Term(c2, d2) -> if (d1==d2) then combine_terms (Plus((Term((c1+c2),d1))::eTl)) else Plus(a::[(combine_terms (Plus(b::eTl)))])
             | _ -> Plus(a::b::[(combine_terms (Plus eTl))])
           )
         | _ -> Plus(a::[(combine_terms (Plus(b::eTl)))])
