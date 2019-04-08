@@ -196,7 +196,7 @@ let rec simplify1 (e:pExp) : pExp =
             | Times(pExpList) -> Plus((a::[(mul_terms pExpList)])@eTl)
           )
         | Plus(pExprList) -> simplify1 (Plus(b::pExprList@eTl))
-        | Times(a::b::eTl) -> Plus((mul_terms [a;b])::eTl)
+        | Times(c::d::eTl) -> Plus((mul_terms [c;d])::b::eTl)
       )
     | Times(eList) -> mul_terms eList
     | Plus(a::[]) -> a
