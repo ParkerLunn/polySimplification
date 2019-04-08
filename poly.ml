@@ -162,8 +162,8 @@ let rec mul_terms (pExpList:(pExp list)) : pExp =
         | Term(c1, d1) ->
           match b with
             | Term(c2, d2) -> Term((c2*c1),(d1+d2)) (* Create single term from the two *)
-            | Plus(pExprList) -> Plus((List.map (fun x -> mul_terms a x) pExprList))(* Multiply each term in the plus by A term *)
-            | Times(pExprList) -> Times(mul_terms (a::(mul_terms pExprList)))(* Get term from TIMES, then multiply by A term *)
+            | Plus(pExprList) -> Plus(List.map (fun x -> mul_terms [a;x]) pExprList)(* Multiply each term in the plus by A term *)
+            | Times(pExprList) -> mul_terms (a::[(mul_terms pExprList)])(* Get term from TIMES, then multiply by A term *)
         | Plus(eList) ->
           match b with
             | Term(c2, d2) -> Plus((List.map (fun x -> mul_terms b x) eList))(* Multiply each term in the PLUS by A term *)
@@ -182,7 +182,7 @@ let rec simplify1 (e:pExp) : pExp =
       match a with
         | Term ->
           match b with
-            | Term -> add_terms a b
+            | Term -> Plus((add_terms a b)::eTl)
             | Plus(pList) -> Plus((sort_pExpList (a::pList)))
             | Times(pExpList) -> mul_terms pExpList
         | Plus(pExprList) -> simplify1 (Plus(pExprList::b))
