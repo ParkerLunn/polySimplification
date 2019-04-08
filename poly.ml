@@ -121,8 +121,16 @@ let get_deg (t:pExp):int = match t with
     | Term(c,d) -> d
     | _ -> failwith "not a term"
 
-(* flatten ( Plus([Term(1,1);Plus([Plus([Term(2,2);Term(5,5)])]);Times([Term(3,3);Term(4,4)])]) );;
-- : pExp list = [Term (1, 1); Term (2, 2); Term (5, 5); Times [Term (3, 3); Term (4, 4)]] *)
+(* flatten ( Plus([ Term(1,1);
+                    Plus([  Plus([  Term(2,2);
+                                    Term(5,5)])]);
+                    Times([ Term(3,3);
+                            Times([ Term(4,4)])]);
+                    Plus([Term(6,6);
+                          Term(7,7)])]) );;
+
+- : [Term (1, 1); Plus [Term (2, 2); Term (5, 5)]; Times [Term (3, 3); Term (4, 4)]; Term (6, 6); Term (7, 7)]
+*)
 let rec flatten (e:pExp): (pExp list) = match e with
     | Term(_,_) -> [e]
     | Plus([]) -> []
@@ -138,11 +146,11 @@ let rec flatten (e:pExp): (pExp list) = match e with
                             | Times(inList) -> (inList)@(flatten (Times outTl))
                             )
 
-
-    (* if both are terms with same degree, return one term with coefs added
-      If both are pluses, concat their lists
-      if both are times, mult every index of l1 with every index of l2
-    *)
+(* 
+  if both are terms with same degree, return one term with coefs added
+  If both are pluses, concat their lists
+  if both are times, mult every index of l1 with every index of l2
+*)
 let add_terms (e1:pExp) (e2:pExp) : pExp = match e1 with
     | Term(c1,d1) -> if (d1==(get_deg e2)) then Term(((get_coeff e1)+(get_coeff e2)),d1) else Plus(e1::e2)
 

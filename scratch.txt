@@ -8,3 +8,4 @@ Times(Times([a;b]);Times([c;d])) = Plus([Times([a;c]);Times(a;d);Times(b;c);Time
   
 let rec sort_pExpList (pList: (pExp list)): (pExp list) =
     Sort.list compare pList *)
+flatten ( Plus([Term(1,1);Plus([Plus([Term(2,2);Term(5,5)])]);Times([Term(3,3);Times([Term(4,4)])]);Plus([Term(6,6);Term(7,7)])]) );;
