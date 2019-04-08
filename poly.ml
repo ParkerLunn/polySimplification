@@ -165,21 +165,21 @@ let rec mul_terms (pExpList:(pExp list)) : pExp =
       (match a with
         | Term(c1, d1) ->
             (match b with
-            | Term(c2, d2) -> Term((c2*c1),(d1+d2)) (* Create single term from the two *)
-            | Plus(pExprList) -> Plus(Stdlib.List.map (fun x -> mul_terms [a;x]) pExprList)(* Multiply each term in the plus by A term *)
-            | Times(pExprList) -> mul_terms (a::[(mul_terms pExprList)])(* Get term from TIMES, then multiply by A term *)
+            | Term(c2, d2) -> mul_terms ((Term((c2*c1),(d1+d2)))::eTl) (* Create single term from the two *)
+            | Plus(pExprList) -> mul_terms ((Plus(Stdlib.List.map (fun x -> mul_terms [a;x]) pExprList))::eTl) (* Multiply each term in the plus by A term *)
+            | Times(pExprList) -> mul_terms ((mul_terms (a::[(mul_terms pExprList)]))::eTl) (* Get term from TIMES, then multiply by A term *)
             )
         | Plus(eList) ->
             (match b with
-            | Term(c2, d2) -> Plus(Stdlib.List.map (fun x -> mul_terms [b;x]) eList)(* Multiply each term in the PLUS by A term *)
-            | Plus(pExprList) -> Plus(Stdlib.List.map (fun x-> mul_terms [x;a]) pExprList)(* FOIL *)
-            | Times(pExprList) -> mul_terms (a::[(mul_terms pExprList)])(* Get term from TIMES, then distribute into PLUS *)
+            | Term(c2, d2) -> mul_terms ((Plus(Stdlib.List.map (fun x -> mul_terms [b;x]) eList))::eTl) (* Multiply each term in the PLUS by A term *)
+            | Plus(pExprList) -> mul_terms ((Plus(Stdlib.List.map (fun x-> mul_terms [x;a]) pExprList))::eTl) (* FOIL *)
+            | Times(pExprList) -> mul_terms ((mul_terms (a::[(mul_terms pExprList)]))::eTl) (* Get term from TIMES, then distribute into PLUS *)
             )
         | Times(eList) ->
             (match b with
-            | Term(c2, d2) -> mul_terms (b::[(mul_terms eList)])(* Get term from TIMES, then multiply by B term *)
-            | Plus(pExprList) -> mul_terms (b::[(mul_terms eList)])(* Get term from TIMES, then distribute into PLUS *)
-            | Times(pExprList) ->mul_terms (pExprList@eList) (* Get term from TIMES, obtain single term from both *)
+            | Term(c2, d2) -> mul_terms ((mul_terms (b::[(mul_terms eList)]))::eTl) (* Get term from TIMES, then multiply by B term *)
+            | Plus(pExprList) -> mul_terms ((mul_terms (b::[(mul_terms eList)]))::eTl) (* Get term from TIMES, then distribute into PLUS *)
+            | Times(pExprList) -> mul_terms ((mul_terms (pExprList@eList))::eTl) (* Get term from TIMES, obtain single term from both *)
             )
       )
     | a::[] -> a
@@ -191,14 +191,17 @@ let rec simplify1 (e:pExp) : pExp =
       (match a with
         | Term(c1,d1) ->
           (match b with
-            | Term(c2,d2) -> if (d1==d2) then Term((c1+c2),d1) else Plus([a;b])
-            | Plus(pList) -> Plus((sort_pExpList (a::pList)))
-            | Times(pExpList) -> Plus(a::[(mul_terms pExpList)])
+            | Term(c2,d2) -> if (d1==d2) then (Plus(Term((c1+c2),d1)::eTl)) else Plus([a;b]@eTl)
+            | Plus(pList) -> Plus((sort_pExpList (a::pList))@eTl)
+            | Times(pExpList) -> Plus((a::[(mul_terms pExpList)])@eTl)
           )
-        | Plus(pExprList) -> simplify1 (Plus(b::pExprList))
+        | Plus(pExprList) -> simplify1 (Plus(b::pExprList@eTl))
         | Times(a::b::eTl) -> Plus((mul_terms [a;b])::eTl)
       )
     | Times(eList) -> mul_terms eList
+    | Plus(a::[]) -> a
+    | Times(a::[]) -> a
+    | Term(_,_) -> e
 (* 
   Compute if two pExp are the same 
   Make sure this code works before you work on simplify1  
