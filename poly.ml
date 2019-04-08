@@ -121,13 +121,22 @@ let get_deg (t:pExp):int = match t with
     | Term(c,d) -> d
     | _ -> failwith "not a term"
 
+(* flatten ( Plus([Term(1,1);Plus([Plus([Term(2,2);Term(5,5)])]);Times([Term(3,3);Term(4,4)])]) );;
+- : pExp list = [Term (1, 1); Term (2, 2); Term (5, 5); Times [Term (3, 3); Term (4, 4)]] *)
 let rec flatten (e:pExp): (pExp list) = match e with
     | Term(_,_) -> [e]
     | Plus([]) -> []
-    | Plus(outHd::outTl) -> match outHd with
+    | Times([])-> []
+    | Plus(outHd::outTl) -> (match outHd with
                             | Term(_,_) -> outHd::(flatten (Plus outTl))
                             | Plus(inList) -> inList@(flatten (Plus outTl))
-                            | Times(inList) -> (flatten outHd)@(flatten (Plus outTl))
+                            | Times(inList) -> (Times(flatten outHd))::(flatten (Plus outTl))
+                            )
+    | Times(outHd::outTl) ->(match outHd with
+                            | Term(_,_) -> outHd::(flatten (Times outTl))
+                            | Plus(inList) -> (flatten outHd)@(flatten (Times outTl))
+                            | Times(inList) -> (inList)@(flatten (Times outTl))
+                            )
 
 
     (* if both are terms with same degree, return one term with coefs added
