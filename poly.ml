@@ -64,6 +64,10 @@ let compare_expr (e1: pExp) (e2: pExp) : int =
 let rec sort_pExpList (pList: (pExp list)): (pExp list) =
     List.rev (List.sort compare_expr pList )
 
+let rec sort (e:pExp): pExp = match e with
+    | Term(_,_) -> e
+    | Plus(eList) -> Plus(sort_pExpList eList)
+    | Times(eList) -> Times(sort_pExpList eList)
 (* 
   Hint 1: Print () around elements that are not Term() 
   Hint 2: Recurse on the elements of Plus[..] or Times[..]
@@ -87,14 +91,14 @@ let rec print_pExp (_e: pExp): unit = match _e with
                                     | []-> print_pExp eHd;
                                     | _ -> print_pExp eHd; Printf.printf " + "; print_pExp (Plus eTl );
                                     )
-                      | [] -> Printf.printf "\n";
+                      | [] -> Printf.printf "";
                      )
     | Times(eList)-> (match eList with
                       | eHd::eTl -> (match eTl with
                                     | []-> print_pExp eHd;
                                     | _ -> print_pExp eHd; Printf.printf " * "; print_pExp (Times eTl );
                                     )
-                      | [] -> Printf.printf "\n";
+                      | [] -> Printf.printf "";
                      )
 
 
@@ -185,15 +189,19 @@ let rec mul_terms (pExpList:(pExp list)) : pExp =
     | a::[] -> a
     | [] -> failwith "you fucked up"
 
-let rec combine_terms (pExpList:(pExp list)) : pExp list =
-  match e with ->
-    | a::b::eTl ->
-      match a with
+let rec combine_terms (e:pExp) : (pExp) =
+  match e with 
+    | Plus(a::[]) -> e
+    | Plus(a::b::eTl) ->
+      (match a with
         | Term(c1, d1) ->
-          match b with
-            | Term(c2, d2) -> if (d1==d2) then (Plus(Term((c1+c2),d1)::(combine_terms eTl))) else a::(combine_terms [b::eTl])
-            | _ -> a::b::(combine_terms eTl)
-        | _ -> a::(combine_terms [b::eTl])
+          (match b with
+            | Term(c2, d2) -> if (d1==d2) then combine_terms (Plus((Term((c1+c2),d1))::eTl)) else Plus(a::(combine_terms b::eTl))
+            | _ -> Plus(a::b::[(combine_terms (Plus eTl))])
+          )
+        | _ -> Plus(a::[(combine_terms (Plus(b::eTl)))])
+      )
+    | _ -> e
 
 let rec simplify1 (e:pExp) : pExp = 
   match e with
@@ -203,7 +211,7 @@ let rec simplify1 (e:pExp) : pExp =
           (match b with
             | Term(c2,d2) -> if (d1==d2) then (Plus(Term((c1+c2),d1)::eTl)) else Plus([a;b]@eTl);
             | Plus(pList) -> Plus((sort_pExpList (a::pList))@eTl)
-            | Times(pExpList) -> Plus((a::[(mul_terms pExpList)])@eTl)
+            | Times(pExpList) -> Plus(sort_pExpList ((a::[(mul_terms pExpList)])@eTl))
           )
         | Plus(pExprList) -> simplify1 (Plus(b::pExprList@eTl))
         | Times(c::d::eTl) -> Plus((mul_terms [c;d])::b::eTl)
@@ -223,9 +231,9 @@ let equal_pExp (_e1: pExp) (_e2: pExp) :bool = _e1 = _e2
   progress is made
 *)    
 let rec simplify (e:pExp): pExp =
+    let e = sort e in
     let rE = simplify1(e) in
       (* print_pExp rE; *)
-      print_newline();
       if (equal_pExp e rE) then
         combine_terms e
       else
