@@ -152,7 +152,7 @@ let rec flatten (e:pExp): (pExp list) = match e with
   if both are times, mult every index of l1 with every index of l2
 *)
 let add_terms (e1:pExp) (e2:pExp) : pExp = match e1 with
-    | Term(c1,d1) -> if (d1==(get_deg e2)) then Term(((get_coeff e1)+(get_coeff e2)),d1) else Plus(e1::e2)
+    | Term(c1,d1) -> if (d1==(get_deg e2)) then Term(((get_coeff e1)+(get_coeff e2)),d1) else Plus([e1;e2])
 
 let rec mul_terms (pExpList:(pExp list)) : pExp =
   match pExpList with
@@ -178,28 +178,22 @@ let rec mul_terms (pExpList:(pExp list)) : pExp =
             | Times(pExprList) ->mul_terms (pExprList@eList) (* Get term from TIMES, obtain single term from both *)
             )
       )
-    | a::[] -> Plus(a)
+    | a::[] -> a
 
 let rec simplify1 (e:pExp) : pExp = 
   match e with
     | Plus(a::b::eTl) ->
-      match a with
-        | Term ->
-          match b with
-            | Term -> Plus((add_terms a b)::eTl)
+      (match a with
+        | Term(_,_) ->
+          (match b with
+            | Term(_,_) -> Plus((add_terms a b)::eTl)
             | Plus(pList) -> Plus((sort_pExpList (a::pList)))
             | Times(pExpList) -> mul_terms pExpList
-        | Plus(pExprList) -> simplify1 (Plus(pExprList::b))
-        | Times(a::b::eTl) ->
-    | Times(a::b) ->
-      match a with
-        | Term ->
-          match b with
-            | Term -> 
-            | Plus ->
-            | Times ->
-        | Plus(a::b::eTl) -> 
-        | Times(a::b::eTl) -> Times(combine(Times(a::b)),eTl)
+          )
+        | Plus(pExprList) -> simplify1 (Plus(b::pExprList))
+        | Times(a::b::eTl) -> Plus((mul_terms [a;b])::eTl)
+      )
+    | Times(eList) -> mul_terms eList
 (* 
   Compute if two pExp are the same 
   Make sure this code works before you work on simplify1  
