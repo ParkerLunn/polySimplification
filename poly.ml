@@ -185,13 +185,23 @@ let rec mul_terms (pExpList:(pExp list)) : pExp =
     | a::[] -> a
     | [] -> failwith "you fucked up"
 
+let rec combine_terms (pExpList:(pExp list)) : pExp list =
+  match e with ->
+    | a::b::eTl ->
+      match a with
+        | Term(c1, d1) ->
+          match b with
+            | Term(c2, d2) -> if (d1==d2) then (Plus(Term((c1+c2),d1)::(combine_terms eTl))) else a::(combine_terms [b::eTl])
+            | _ -> a::b::(combine_terms eTl)
+        | _ -> a::(combine_terms [b::eTl])
+
 let rec simplify1 (e:pExp) : pExp = 
   match e with
     | Plus(a::b::eTl) ->
       (match a with
         | Term(c1,d1) ->
           (match b with
-            | Term(c2,d2) -> if (d1==d2) then (Plus(Term((c1+c2),d1)::eTl)) else Plus([a;b]@eTl)
+            | Term(c2,d2) -> if (d1==d2) then (Plus(Term((c1+c2),d1)::eTl)) else Plus([a;b]@eTl);
             | Plus(pList) -> Plus((sort_pExpList (a::pList))@eTl)
             | Times(pExpList) -> Plus((a::[(mul_terms pExpList)])@eTl)
           )
@@ -217,8 +227,8 @@ let rec simplify (e:pExp): pExp =
       (* print_pExp rE; *)
       print_newline();
       if (equal_pExp e rE) then
-        e
-      else  
+        combine_terms e
+      else
         simplify(rE)
 
 
