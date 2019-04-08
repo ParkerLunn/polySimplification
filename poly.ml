@@ -166,7 +166,7 @@ let rec mul_terms (pExpList:(pExp list)) : pExp =
             | Times(pExprList) -> mul_terms (a::[(mul_terms pExprList)])(* Get term from TIMES, then multiply by A term *)
         | Plus(eList) ->
           match b with
-            | Term(c2, d2) -> Plus((List.map (fun x -> mul_terms b x) eList))(* Multiply each term in the PLUS by A term *)
+            | Term(c2, d2) -> Plus((List.map (fun x -> mul_terms [b;x]) eList))(* Multiply each term in the PLUS by A term *)
             | Plus(pExprList) -> (* FOIL *)
             | Times(pExprList) -> Times(a::(mul_terms pExprList)))(* Get term from TIMES, then distribute into PLUS *)
         | Times(eList) ->
